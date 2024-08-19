@@ -1,0 +1,125 @@
+﻿Application Overview
+********************
+
+Your application is a multi-tasked console application that retrieves posts from one or more subreddits, calculates statistics, and saves the results to a file. 
+The app uses dependency injection to manage its various services and relies on asynchronous tasks to fetch data from Reddit.
+
+Core Functionality
+********************
+
+Configuration:
+--------------
+The application is configured via appsettings.json, where you define the file path, user agent, token, and the subreddits to monitor.
+
+Multitasking:
+--------------
+The application spawns multiple tasks to fetch posts from each subreddit concurrently.
+Another task is dedicated to waiting for user input and responding to commands such as printing statistics or quitting the application.
+
+Batch Creation:
+--------------
+After all subreddit tasks have completed, a batch is created containing the combined statistics for all subreddits and individual statistics for each subreddit.
+The batch is saved to a file and stored in the singleton StatisticsService.
+
+User Interaction:
+--------------
+The user can interact with the app via console commands to print statistics, view batch information, or quit the application.
+
+Class Definitions
+********************
+
+Batch: 
+--------------
+Represents a batch of posts, including a timestamp, overall statistics, and per-subreddit statistics.
+
+Statistics:
+--------------
+Holds the statistical data for a set of posts, such as the most popular posts, total upvotes, and most popular authors.
+ 
+Post:
+--------------
+Represents an individual Reddit post (not fully defined in the provided notes).
+
+Application Flow
+********************
+
+Startup:
+--------------
+The application starts by reading configuration settings and initializing services via dependency injection.
+
+Monitoring:
+--------------
+A monitoring task is started to fetch posts from the specified subreddits. Each subreddit is handled by a separate task to improve performance.
+The application waits for all subreddit tasks to complete, then creates a batch and updates the statistics.
+
+User Input:
+--------------
+The main thread continuously waits for user input, allowing the user to print statistics or exit the application.
+
+Rate Limiting:
+--------------
+The application handles Reddit API rate limiting by delaying requests as necessary, ensuring that the API's rate limits are not exceeded.
+
+Implementation Details
+********************
+
+Configuration (appsettings.json):
+{
+  "AppSettings": {
+    "FilePath": "C:\\Temp\\JackHenry.txt",
+    "UserAgent": "Your_App_Id",
+    "Token": "bearer Your_Token",
+    "Subreddits": [
+      "news",
+      "technology",
+      "funny",
+      "jokes",
+      "memes"
+    ]
+  }
+}
+
+public class Batch
+{
+    public string BatchDateTimeStamp { get; }
+    public Statistics Statistics { get; set; }
+    public Dictionary<string, Statistics> SubredditStatistics { get; set; }
+
+    public Batch(string batchDateTimeStamp)
+    {
+        BatchDateTimeStamp = batchDateTimeStamp;
+        SubredditStatistics = new Dictionary<string, Statistics>();
+    }
+}
+
+public class Statistics
+{
+    public List<Post> MostPopularPosts { get; set; } = new List<Post>();
+    public int PostUpvotes { get; set; } = 0;
+    public List<string> MostPopularAuthors { get; set; } = new List<string>();
+    public int AuthorPosts { get; set; } = 0;
+}
+
+Error Handling & Concurrency
+********************
+
+Error Handling: 
+--------------
+Implements appropriate try-catch blocks around asynchronous tasks, especially when dealing with external API calls, to ensure that exceptions are logged and handled gracefully.
+
+Concurrency: 
+--------------
+Uses SemaphoreSlim to manage access to shared resources like rate limits. Ensure that all tasks respect the cancellation token to allow for graceful shutdown.
+
+Conclusion
+********************
+
+This architecture allows for a highly configurable and scalable solution that can easily be extended to monitor more subreddits or provide more detailed statistics. 
+The use of dependency injection makes the application easy to test and maintain. 
+By adhering to the rate limits and managing tasks efficiently, the application should perform well even with a large number of subreddits.
+
+
+
+
+
+
